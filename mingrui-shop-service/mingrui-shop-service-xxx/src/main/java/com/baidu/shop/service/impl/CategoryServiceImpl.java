@@ -25,6 +25,30 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     @Autowired
     private CategoryMapper categoryMapper;
 
+
+
+    @Transactional
+    @Override
+    public Result<JsonObject> saveCateGory(CategoryEntity categoryEntity) {
+
+        CategoryEntity entity = new CategoryEntity();
+        entity.setId(categoryEntity.getParentId());
+        entity.setIsParent(1);
+        categoryMapper.updateByPrimaryKeySelective(entity);
+
+        categoryMapper.insertSelective(categoryEntity);
+        return this.setResultSuccess();
+    }
+
+
+    @Transactional
+    @Override
+    public Result<JsonObject> editCateGoryById(CategoryEntity entity) {
+
+        categoryMapper.updateByPrimaryKeySelective(entity);
+        return this.setResultSuccess();
+    }
+
     @Override
     public Result<List<CategoryEntity>> getCategoryByPid(Integer pid) {
         CategoryEntity entity = new CategoryEntity();
@@ -48,7 +72,7 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         //判断当前节点是否为父节点
         if (categoryEntity.getIsParent() == 1) return this.setResultError("当前节点为父节点");
 
-        //相当于拼接 Sql
+        //相当于拼接 Sql  通过被删除节点Id查询数据
         Example example = new Example(CategoryEntity.class);
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
         List<CategoryEntity> categoryEntities = categoryMapper.selectByExample(example);
@@ -65,4 +89,5 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         categoryMapper.deleteByPrimaryKey(id);
         return this.setResultSuccess();
     }
+
 }
