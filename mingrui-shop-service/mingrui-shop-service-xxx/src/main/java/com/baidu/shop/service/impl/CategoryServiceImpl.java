@@ -42,19 +42,19 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
         //根据Id查询数据
         CategoryEntity categoryEntity = categoryMapper.selectByPrimaryKey(id);
 
-        //判断对象是否为空
+        //判断对象不为空
         if (ObjectUtil.isNull(categoryEntity)) return this.setResultError("数据不存在");
 
-        //判断节点是否为父节点
+        //判断当前节点是否为父节点
         if (categoryEntity.getIsParent() == 1) return this.setResultError("当前节点为父节点");
 
-        //通过父节点Id查询是否有parent_id为父节点Id的其他数据
+        //相当于拼接 Sql
         Example example = new Example(CategoryEntity.class);
         example.createCriteria().andEqualTo("parentId",categoryEntity.getParentId());
         List<CategoryEntity> categoryEntities = categoryMapper.selectByExample(example);
 
-        //当前节点的父节点的size <= 1 把是否为父节点的状态改为0
         if (categoryEntities.size() <= 1){
+
             CategoryEntity entity = new CategoryEntity();
             entity.setIsParent(0);
             entity.setId(categoryEntity.getParentId());
@@ -62,7 +62,6 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
             categoryMapper.updateByPrimaryKeySelective(entity);
         }
 
-        //通过Id删除节点
         categoryMapper.deleteByPrimaryKey(id);
         return this.setResultSuccess();
     }

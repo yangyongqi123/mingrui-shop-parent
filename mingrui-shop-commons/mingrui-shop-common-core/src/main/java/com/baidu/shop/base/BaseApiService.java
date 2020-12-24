@@ -38,7 +38,7 @@ public class BaseApiService<T>{
     }
     // 通用封装
     public Result<T> setResult(Integer code, String msg, T data) {
-        log.info(String.format("{code : %s , msg : %s , data : %s}",code,msg,
+        log.info(String.format("{code : %s , message : %s , data : %s}",code,msg,
                 JSONUtil.toJsonString(data)));
         return new Result<T>(code, msg, data);
     }
