@@ -34,4 +34,8 @@ public class BrandDTO extends BaseDTO {
 
     @ApiModelProperty(value = "品牌首字母")
     private Character letter;
+
+    @ApiModelProperty(value = "品牌Id集合")
+    private String categories;
+
 }

@@ -26,4 +26,8 @@ public class BaseDTO {
 
     @ApiModelProperty(value = "是否升序")
     private String order;
+
+//    public String getOrderBy(){
+//        return  sort + " " +(Boolean.valueOf(order)?"desc":"asc");
+//    }
 }
