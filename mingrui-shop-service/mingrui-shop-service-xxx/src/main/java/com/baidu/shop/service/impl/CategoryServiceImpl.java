@@ -2,7 +2,9 @@ package com.baidu.shop.service.impl;
 
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
+import com.baidu.shop.entity.CategoryBrandEntity;
 import com.baidu.shop.entity.CategoryEntity;
+import com.baidu.shop.mapper.CategoryBrandMapper;
 import com.baidu.shop.mapper.CategoryMapper;
 import com.baidu.shop.service.CategoryService;
 import com.baidu.shop.utils.ObjectUtil;
@@ -11,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
+
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -25,7 +29,14 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
     @Autowired
     private CategoryMapper categoryMapper;
 
+    @Resource
+    private CategoryBrandMapper categoryBrandMapper;
 
+    @Override
+    public Result<List<CategoryEntity>> getCategoryByBrandId(Integer brandId) {
+        List<CategoryEntity> list =  categoryMapper.getCategoryByBrandId(brandId);
+        return this.setResultSuccess(list);
+    }
 
     @Transactional
     @Override
@@ -71,6 +82,14 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
         //判断当前节点是否为父节点
         if (categoryEntity.getIsParent() == 1) return this.setResultError("当前节点为父节点");
+
+        //根据分类ID查询中间表是否存在分类
+        Example example1 = new Example(CategoryBrandEntity.class);
+        example1.createCriteria().andEqualTo("categoryId",categoryEntity.getId());
+        List<CategoryBrandEntity> categoryBrandEntities = categoryBrandMapper.selectByExample(example1);
+        if(ObjectUtil.isNotNull(categoryBrandEntities)){
+            return this.setResultError("不能删除");
+        }
 
         //相当于拼接 Sql  通过被删除节点Id查询数据
         Example example = new Example(CategoryEntity.class);
