@@ -4,11 +4,15 @@ import com.alibaba.fastjson.JSONObject;
 import com.baidu.shop.base.BaseApiService;
 import com.baidu.shop.base.Result;
 import com.baidu.shop.dto.SpecGroupDTO;
+import com.baidu.shop.dto.SpecParamDTO;
 import com.baidu.shop.entity.SpecGroupEntity;
+import com.baidu.shop.entity.SpecParamEntity;
 import com.baidu.shop.mapper.SpecGroupMapper;
+import com.baidu.shop.mapper.SpecParamMapper;
 import com.baidu.shop.service.SpecificationService;
 import com.baidu.shop.utils.BaiduBeanUtils;
 import com.baidu.shop.utils.ObjectUtil;
+import org.aspectj.weaver.ast.Var;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.RestController;
 import tk.mybatis.mapper.entity.Example;
@@ -28,10 +32,49 @@ public class SpecificationServiceImpl extends BaseApiService implements Specific
     @Resource
     private SpecGroupMapper specGroupMapper;
 
+    @Resource
+    private SpecParamMapper specParamMapper;
+
+    @Transactional
+    @Override
+    public Result<JSONObject> deleteSpecParamInfo(Integer id) {
+        specParamMapper.deleteByPrimaryKey(id);
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    @Override
+    public Result<JSONObject> editSpecParamInfo(SpecParamDTO specParamDTO) {
+        SpecParamEntity specParamEntity = BaiduBeanUtils.copyProperties(specParamDTO, SpecParamEntity.class);
+        specParamMapper.updateByPrimaryKeySelective(specParamEntity);
+        return this.setResultSuccess();
+    }
+
+    @Transactional
+    @Override
+    public Result<JSONObject> saveSpecParamInfo(SpecParamDTO specParamDTO) {
+        SpecParamEntity specParamEntity = BaiduBeanUtils.copyProperties(specParamDTO, SpecParamEntity.class);
+        if (null == specParamEntity.getName()) return this.setResultError("参数名不能为空");
+        specParamMapper.insertSelective(specParamEntity);
+        return this.setResultSuccess();
+    }
+
+    @Override
+    public Result<List<SpecParamEntity>> getSpecParamInfo(SpecParamDTO specParamDTO) {
+        SpecParamEntity specParamEntity = BaiduBeanUtils.copyProperties(specParamDTO, SpecParamEntity.class);
+        Example example = new Example(SpecParamEntity.class);
+        example.createCriteria().andEqualTo("groupId",specParamEntity.getGroupId());
+        List<SpecParamEntity> specParamEntities = specParamMapper.selectByExample(example);
+        return this.setResultSuccess(specParamEntities);
+    }
 
     @Transactional
     @Override
     public Result<JSONObject> deleteSpecGroupInfo(Integer id) {
+        Example example = new Example(SpecParamEntity.class);
+        example.createCriteria().andEqualTo("groupId",id);
+        List<SpecParamEntity> specParamEntities = specParamMapper.selectByExample(example);
+        if (specParamEntities.size() > 0) return  this.setResultError("已有参数不能删除");
         specGroupMapper.deleteByPrimaryKey(id);
         return this.setResultSuccess();
     }
