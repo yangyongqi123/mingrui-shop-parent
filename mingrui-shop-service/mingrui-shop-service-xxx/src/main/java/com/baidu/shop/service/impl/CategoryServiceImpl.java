@@ -85,10 +85,10 @@ public class CategoryServiceImpl extends BaseApiService implements CategoryServi
 
         //根据分类ID查询中间表是否存在分类
         Example example1 = new Example(CategoryBrandEntity.class);
-        example1.createCriteria().andEqualTo("categoryId",categoryEntity.getId());
+        example1.createCriteria().andEqualTo("categoryId",id);
         List<CategoryBrandEntity> categoryBrandEntities = categoryBrandMapper.selectByExample(example1);
-        if(ObjectUtil.isNotNull(categoryBrandEntities)){
-            return this.setResultError("不能删除");
+        if(categoryBrandEntities.size() != 0){
+            return this.setResultError("被绑定了不能删除");
         }
 
         //相当于拼接 Sql  通过被删除节点Id查询数据
