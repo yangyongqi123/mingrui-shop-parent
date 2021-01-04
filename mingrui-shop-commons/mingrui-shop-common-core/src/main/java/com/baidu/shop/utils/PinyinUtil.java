@@ -22,7 +22,7 @@ public class PinyinUtil {
      * 获取汉字首字母或全拼大写字母
      *
      * @param chinese 汉字
-     * @param isFull  是否全拼 true:表示全拼 false表示：首字母
+     * @param isFull  是否全拼 true:表示全拼    false表示：首字母
      * @return 全拼或者首字母大写字符窜
      */
     public static String getUpperCase(String chinese, boolean isFull) {

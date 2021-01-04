@@ -8,9 +8,7 @@ import com.github.pagehelper.PageInfo;
 import com.google.gson.JsonObject;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 @Api(tags = "品牌接口")
 public interface BrandService {
@@ -22,4 +20,12 @@ public interface BrandService {
     @ApiOperation(value = "新增品牌信息")
     @PostMapping(value = "/brand/save")
     Result<JSONObject>  saveBrandInfo(@RequestBody  BrandDTO brandDTO);
+
+    @ApiOperation(value = "修改品牌信息")
+    @PutMapping(value = "/brand/save")
+    Result<JSONObject>  updateBrandInfo(@RequestBody  BrandDTO brandDTO);
+
+    @ApiOperation(value = "删除品牌")
+    @DeleteMapping(value = "/brand/delete")
+    Result<JSONObject>  deleteBrandInfo(Integer id);
 }
