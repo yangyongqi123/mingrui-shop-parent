@@ -95,6 +95,7 @@ public class BrandServiceImpl extends BaseApiService implements BrandService {
 
         //条件查询
         BrandeEntity brandeEntity = BaiduBeanUtils.copyProperties(brandDTO, BrandeEntity.class);
+
         //创建Example的实例
         Example example = new Example(BrandeEntity.class);
         example.createCriteria().andLike("name", "%" + brandeEntity.getName() + "%");
