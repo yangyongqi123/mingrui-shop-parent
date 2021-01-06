@@ -15,5 +15,5 @@ public interface GoodsService {
 
     @ApiOperation(value = "获取商品信息")
     @GetMapping(value = "goods/getSpuInfo")
-    Result<PageInfo<SpuEntity>>  getSpuInfo(SpuDTO spuDTO);
+    Result<PageInfo<SpuDTO>>  getSpuInfo(SpuDTO spuDTO);
 }
