@@ -9,6 +9,7 @@ import lombok.Data;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 /**
  * @ClassName SupDTO
@@ -63,4 +64,10 @@ public class SpuDTO extends BaseDTO {
     private String categoryName;
 
     private String brandName;
+
+    @ApiModelProperty(value = "大数据字段")
+    private SpuDetailDTO spuDetail;
+
+    @ApiModelProperty(value = "sku属性数据集合")
+    private List<SkuDTO> skus;
 }
