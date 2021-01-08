@@ -6,8 +6,10 @@ import com.baidu.shop.dto.SpecGroupDTO;
 import com.baidu.shop.dto.SpecParamDTO;
 import com.baidu.shop.entity.SpecGroupEntity;
 import com.baidu.shop.entity.SpecParamEntity;
+import com.baidu.shop.validate.group.MingruiOperation;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,11 +22,11 @@ public interface SpecificationService {
 
     @ApiOperation("新增规则数据")
     @PostMapping("specgroup/save")
-    Result<JSONObject> saveSpecGroupInfo(@RequestBody  SpecGroupDTO specGroupDTO);
+    Result<JSONObject> saveSpecGroupInfo(@Validated({MingruiOperation.Add.class}) @RequestBody  SpecGroupDTO specGroupDTO);
 
     @ApiOperation("修改规则数据")
     @PutMapping("specgroup/save")
-    Result<JSONObject> editSpecGroupInfo(@RequestBody  SpecGroupDTO specGroupDTO);
+    Result<JSONObject> editSpecGroupInfo(@Validated({MingruiOperation.Update.class}) @RequestBody  SpecGroupDTO specGroupDTO);
 
     @ApiOperation("删除规则数据")
     @DeleteMapping("specgroup/delete")
@@ -36,11 +38,11 @@ public interface SpecificationService {
 
     @ApiOperation("新增规则参数")
     @PostMapping("specparam/saveSpecParamInfo")
-    Result<JSONObject>  saveSpecParamInfo(@RequestBody SpecParamDTO specParamDTO);
+    Result<JSONObject>  saveSpecParamInfo(@Validated({MingruiOperation.Add.class})@RequestBody SpecParamDTO specParamDTO);
 
     @ApiOperation("修改规则参数")
     @PutMapping("specparam/saveSpecParamInfo")
-    Result<JSONObject>  editSpecParamInfo(@RequestBody SpecParamDTO specParamDTO);
+    Result<JSONObject>  editSpecParamInfo(@Validated({MingruiOperation.Update.class}) @RequestBody SpecParamDTO specParamDTO);
 
     @ApiOperation("删除规则参数")
     @DeleteMapping("specparam/delete")

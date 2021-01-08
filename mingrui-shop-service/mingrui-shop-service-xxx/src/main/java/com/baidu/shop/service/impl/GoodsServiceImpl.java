@@ -14,6 +14,7 @@ import com.baidu.shop.utils.BaiduBeanUtils;
 import com.baidu.shop.utils.ObjectUtil;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import io.swagger.models.auth.In;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -58,6 +59,100 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
 
     @Override
     @Transactional
+    public Result<JSONObject> updateSaleable(SpuDTO spuDTO) {
+        SpuEntity spuEntity = BaiduBeanUtils.copyProperties(spuDTO, SpuEntity.class);
+        if (ObjectUtil.isNotNull(spuEntity.getSaleable()) && spuDTO.getSaleable() < 2){
+            if (spuEntity.getSaleable() == 1){
+                spuEntity.setSaleable(0);
+            }else {
+                spuEntity.setSaleable(1);
+            }
+            spuMapper.updateByPrimaryKeySelective(spuEntity);
+        }
+
+        return this.setResultSuccess();
+    }
+
+    @Override
+    @Transactional
+    public Result<JSONObject> delete(Integer spuId) {
+        //删除spu信息
+        spuMapper.deleteByPrimaryKey(spuId);
+        //删除spuDetail信息
+        spuDetailMapper.deleteByPrimaryKey(spuId);
+        //删除sku和stock信息
+        this.deleteSkuAndStockInfo(spuId);
+
+        return this.setResultSuccess();
+    }
+
+    //封装删除sku和stock信息
+    private void deleteSkuAndStockInfo(Integer spuId){
+        Example example = new Example(SkuEntity.class);
+        example.createCriteria().andEqualTo("spuId",spuId);
+        List<SkuEntity> skuEntities = skuMapper.selectByExample(example);
+
+        List<Long> skuIdList = skuEntities.stream().map(skuEntity ->
+                skuEntity.getId()
+        ).collect(Collectors.toList());
+        skuMapper.deleteByIdList(skuIdList);
+        stockMapper.deleteByIdList(skuIdList);
+    }
+
+    @Override
+    @Transactional
+    public Result<JSONObject> updateGoods(SpuDTO spuDTO) {
+        final Date date = new Date();
+        //修改spu
+        SpuEntity spuEntity = BaiduBeanUtils.copyProperties(spuDTO, SpuEntity.class);
+        spuEntity.setLastUpdateTime(date);
+        spuMapper.updateByPrimaryKeySelective(spuEntity);
+
+        //修改spuDetail
+        SpuDetailEntity spuDetailEntity = BaiduBeanUtils.copyProperties(spuDTO.getSpuDetail(), SpuDetailEntity.class);
+        spuDetailMapper.updateByPrimaryKeySelective(spuDetailEntity);
+
+        //根据spuId查询sku信息
+        this.deleteSkuAndStockInfo(spuDTO.getId());
+        //删除sku信息后   进行批量新增
+        //新增sku
+        this.saveSkuAndStockInfo(spuDTO,spuEntity.getId(),date);
+
+        return this.setResultSuccess();
+    }
+
+    //封装新增sku和stock方法啊
+    private void saveSkuAndStockInfo(SpuDTO spuDTO,Integer spuId,Date date){
+        List<SkuDTO> skus  = spuDTO.getSkus();
+        skus.stream().forEach(skuDTO -> {
+            SkuEntity skuEntity = BaiduBeanUtils.copyProperties(skuDTO, SkuEntity.class);
+            skuEntity.setSpuId(spuId);
+            skuEntity.setCreateTime(date);
+            skuEntity.setLastUpdateTime(date);
+            skuMapper.insertSelective(skuEntity);
+
+            //新增tock
+            StockEntity stockEntity = new StockEntity();
+            stockEntity.setSkuId(skuEntity.getId());
+            stockEntity.setStock(skuDTO.getStock());
+            stockMapper.insertSelective(stockEntity);
+        });
+    }
+
+    @Override
+    public Result<List<SkuDTO>> getSkusByspuId(Integer spuId) {
+        List<SkuDTO> list = skuMapper.getSkusAndStockByspuId(spuId);
+        return this.setResultSuccess(list);
+    }
+
+    @Override
+    public Result<SpuDetailEntity> getSpuDetailByspuId(Integer spuId) {
+        SpuDetailEntity spuDetailEntity = spuDetailMapper.selectByPrimaryKey(spuId);
+        return this.setResultSuccess(spuDetailEntity);
+    }
+
+    @Override
+    @Transactional
     public Result<JSONObject> saveGoods(SpuDTO spuDTO) {
         log.info("{}",spuDTO);
 
@@ -75,20 +170,7 @@ public class GoodsServiceImpl extends BaseApiService implements GoodsService {
         spuDetailEntity.setSpuId(spuEntity.getId());
         spuDetailMapper.insertSelective(spuDetailEntity);
         //新增sku
-        List<SkuDTO> skus  = spuDTO.getSkus();
-        skus.stream().forEach(skuDTO -> {
-            SkuEntity skuEntity = BaiduBeanUtils.copyProperties(skuDTO, SkuEntity.class);
-            skuEntity.setSpuId(spuEntity.getId());
-            skuEntity.setCreateTime(date);
-            skuEntity.setLastUpdateTime(date);
-            skuMapper.insertSelective(skuEntity);
-
-            //新增tock
-            StockEntity stockEntity = new StockEntity();
-            stockEntity.setSkuId(skuEntity.getId());
-            stockEntity.setStock(skuDTO.getStock());
-            stockMapper.insertSelective(stockEntity);
-        });
+        this.saveSkuAndStockInfo(spuDTO,spuEntity.getId(),date);
 
         return this.setResultSuccess();
     }
